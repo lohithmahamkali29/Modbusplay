@@ -1,0 +1,360 @@
+﻿<Window x:Class="Modbusplay.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Modbusplay"
+        mc:Ignorable="d"
+        Title="ModbusPlay - Modbus Communication Tool"
+        Height="780" Width="1100"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </Window.Resources>
+
+    <DockPanel>
+        <!-- Status Bar -->
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem>
+                <TextBlock Text="{Binding StatusMessage}"/>
+            </StatusBarItem>
+        </StatusBar>
+
+        <Grid Margin="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="5"/>
+                <RowDefinition Height="180"/>
+            </Grid.RowDefinitions>
+
+            <!-- Connection Settings -->
+            <GroupBox Grid.Row="0" Header="Connection Settings" Padding="8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Row 1: Main settings -->
+                    <WrapPanel Grid.Row="0" Margin="0,0,0,4">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                            <TextBlock Text="Protocol:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <ComboBox ItemsSource="{Binding Protocols}" SelectedItem="{Binding SelectedProtocol}" Width="80"/>
+                        </StackPanel>
+
+                        <!-- Serial settings -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedProtocol}" Value="RTU">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding SelectedProtocol}" Value="ASCII">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <TextBlock Text="COM Port:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <ComboBox ItemsSource="{Binding AvailableComPorts}" SelectedItem="{Binding SelectedComPort}" Width="90"/>
+                            <Button Content="⟳" Command="{Binding RefreshPortsCommand}" Width="28" Margin="2,0,0,0" ToolTip="Refresh Ports"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedProtocol}" Value="RTU">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding SelectedProtocol}" Value="ASCII">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <TextBlock Text="Baud:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <ComboBox ItemsSource="{Binding BaudRates}" SelectedItem="{Binding SelectedBaudRate}" Width="80"/>
+                        </StackPanel>
+
+                        <!-- TCP settings -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedProtocol}" Value="TCP">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <TextBlock Text="IP Address:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBox Text="{Binding IpAddress, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedProtocol}" Value="TCP">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <TextBlock Text="Port:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBox Text="{Binding TcpPort}" Width="60"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                            <TextBlock Text="Slave ID:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBox Text="{Binding SlaveId}" Width="45"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                            <TextBlock Text="Timeout (ms):" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBox Text="{Binding TimeoutMs}" Width="60"/>
+                        </StackPanel>
+
+                        <Button Content="Connect" Command="{Binding ConnectCommand}" Padding="16,4" Margin="0,0,4,4"
+                                Background="#FF4CAF50" Foreground="White" FontWeight="SemiBold"/>
+                        <Button Content="Disconnect" Command="{Binding DisconnectCommand}" Padding="16,4" Margin="0,0,4,4"
+                                Background="#FFF44336" Foreground="White" FontWeight="SemiBold"/>
+                        <TextBlock Text="● Connected" Foreground="Green" VerticalAlignment="Center" FontWeight="Bold" Margin="8,0,0,4"
+                                   Visibility="{Binding IsConnected, Converter={StaticResource BoolToVis}}"/>
+                    </WrapPanel>
+
+                    <!-- Row 2: Additional serial settings -->
+                    <WrapPanel Grid.Row="1">
+                        <WrapPanel.Style>
+                            <Style TargetType="WrapPanel">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedProtocol}" Value="RTU">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding SelectedProtocol}" Value="ASCII">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </WrapPanel.Style>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,12,0">
+                            <TextBlock Text="Data Bits:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <ComboBox ItemsSource="{Binding DataBitsOptions}" SelectedItem="{Binding SelectedDataBits}" Width="50"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,12,0">
+                            <TextBlock Text="Stop Bits:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <ComboBox ItemsSource="{Binding StopBitsOptions}" SelectedItem="{Binding SelectedStopBits}" Width="55"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,12,0">
+                            <TextBlock Text="Parity:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <ComboBox ItemsSource="{Binding ParityOptions}" SelectedItem="{Binding SelectedParity}" Width="70"/>
+                        </StackPanel>
+                    </WrapPanel>
+                </Grid>
+            </GroupBox>
+
+            <!-- Tab Control -->
+            <TabControl Grid.Row="1" Margin="0,8,0,0">
+
+                <!-- Master Tab -->
+                <TabItem>
+                    <TabItem.Header>
+                        <TextBlock Text="📡 Master" FontSize="13"/>
+                    </TabItem.Header>
+                    <Grid Margin="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Controls Row -->
+                        <WrapPanel Grid.Row="0" Margin="0,0,0,8">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                                <TextBlock Text="Function:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                <ComboBox ItemsSource="{Binding FunctionCodes}" SelectedItem="{Binding SelectedFunctionCode}" Width="260"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                                <TextBlock Text="Start Address:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                <TextBox Text="{Binding StartAddress}" Width="70"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,12,4"
+                                        Visibility="{Binding ShowQuantity, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Text="Quantity:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                <TextBox Text="{Binding Quantity}" Width="60"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,12,4"
+                                        IsEnabled="{Binding ShowByteOrder}">
+                                <TextBlock Text="Byte Order:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                <ComboBox ItemsSource="{Binding ByteOrderOptions}" SelectedItem="{Binding SelectedByteOrder}" Width="190"/>
+                            </StackPanel>
+                            <Button Content="  Execute  " Command="{Binding ExecuteMasterCommand}" Padding="20,4" Margin="0,0,0,4"
+                                    FontWeight="Bold" Background="#FF2196F3" Foreground="White"/>
+                        </WrapPanel>
+
+                        <!-- Write values row -->
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8"
+                                    Visibility="{Binding IsWriteFunction, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="Write Values:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBox Text="{Binding WriteValues, UpdateSourceTrigger=PropertyChanged}" Width="500"
+                                     ToolTip="Enter values separated by commas. Use 0x prefix for hex. For coils: 1=ON, 0=OFF"/>
+                        </StackPanel>
+
+                        <!-- Results -->
+                        <Grid Grid.Row="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="{Binding ResponseInfo}" Margin="0,0,0,4" FontWeight="SemiBold" TextWrapping="Wrap"/>
+
+                            <!-- Register Results DataGrid -->
+                            <DataGrid Grid.Row="1" ItemsSource="{Binding RegisterResults}" AutoGenerateColumns="False"
+                                      IsReadOnly="True" CanUserAddRows="False" AlternatingRowBackground="#FFF5F5F5"
+                                      HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                                      Visibility="{Binding ShowRegisterResults, Converter={StaticResource BoolToVis}}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="80"/>
+                                    <DataGridTextColumn Header="Hex" Binding="{Binding HexValue}" Width="100"/>
+                                    <DataGridTextColumn Header="Unsigned" Binding="{Binding DecimalValue}" Width="100"/>
+                                    <DataGridTextColumn Header="Signed" Binding="{Binding SignedValue}" Width="100"/>
+                                    <DataGridTextColumn Header="Binary" Binding="{Binding BinaryValue}" Width="170"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <!-- Coil Results DataGrid -->
+                            <DataGrid Grid.Row="1" ItemsSource="{Binding CoilResults}" AutoGenerateColumns="False"
+                                      IsReadOnly="True" CanUserAddRows="False" AlternatingRowBackground="#FFF5F5F5"
+                                      HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                                      Visibility="{Binding ShowCoilResults, Converter={StaticResource BoolToVis}}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="100"/>
+                                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
+                                    <DataGridTextColumn Header="Hex" Binding="{Binding HexValue}" Width="100"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+
+                <!-- Slave Tab -->
+                <TabItem>
+                    <TabItem.Header>
+                        <TextBlock Text="🔧 Slave" FontSize="13"/>
+                    </TabItem.Header>
+                    <Grid Margin="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <WrapPanel Grid.Row="0" Margin="0,0,0,8">
+                            <Button Content="Start Listening" Command="{Binding StartSlaveCommand}" Padding="12,4" Margin="0,0,4,0"
+                                    Background="#FF4CAF50" Foreground="White" FontWeight="SemiBold"/>
+                            <Button Content="Stop Listening" Command="{Binding StopSlaveCommand}" Padding="12,4" Margin="0,0,12,0"
+                                    Background="#FFF44336" Foreground="White" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding SlaveStatus}" VerticalAlignment="Center" FontStyle="Italic" Foreground="#FF666666"/>
+                        </WrapPanel>
+
+                        <WrapPanel Grid.Row="1" Margin="0,0,0,8">
+                            <Button Content="+ Add Register" Command="{Binding AddSlaveRegisterCommand}" Padding="8,4" Margin="0,0,4,0"/>
+                            <Button Content="- Remove Last" Command="{Binding RemoveSlaveRegisterCommand}" Padding="8,4" Margin="0,0,12,0"/>
+                            <TextBlock Text="Configure register/coil values the slave will respond with. Value &gt; 0 = coil ON."
+                                       VerticalAlignment="Center" FontStyle="Italic" Foreground="Gray"/>
+                        </WrapPanel>
+
+                        <DataGrid Grid.Row="2" ItemsSource="{Binding SlaveRegisters}" AutoGenerateColumns="False"
+                                  CanUserAddRows="False" AlternatingRowBackground="#FFF5F5F5"
+                                  HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="150"/>
+                                <DataGridTextColumn Header="Value (Decimal)" Binding="{Binding Value}" Width="150"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+
+                <!-- Custom Frame Tab -->
+                <TabItem>
+                    <TabItem.Header>
+                        <TextBlock Text="📝 Custom Frame" FontSize="13"/>
+                    </TabItem.Header>
+                    <Grid Margin="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="80"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="Send a custom Modbus frame (hex bytes, e.g. 01 03 00 00 00 0A):" Margin="0,0,0,6"/>
+
+                        <TextBox Grid.Row="1" Text="{Binding CustomFrameHex, UpdateSourceTrigger=PropertyChanged}"
+                                 AcceptsReturn="True" TextWrapping="Wrap" FontFamily="Consolas" FontSize="13"
+                                 VerticalScrollBarVisibility="Auto"
+                                 ToolTip="Enter hex bytes. Spaces and dashes are ignored. For RTU/ASCII, checksum is auto-added if enabled."/>
+
+                        <WrapPanel Grid.Row="2" Margin="0,8,0,8">
+                            <CheckBox Content="Auto-add checksum (CRC/LRC)" IsChecked="{Binding AutoAddChecksum}"
+                                      Margin="0,0,16,0" VerticalAlignment="Center"/>
+                            <CheckBox Content="Wait for response" IsChecked="{Binding WaitForResponse}"
+                                      Margin="0,0,16,0" VerticalAlignment="Center"/>
+                            <Button Content="  Send Frame  " Command="{Binding SendCustomFrameCommand}" Padding="16,4"
+                                    Background="#FF2196F3" Foreground="White" FontWeight="Bold"/>
+                        </WrapPanel>
+
+                        <TextBlock Grid.Row="3" Text="Response:" Margin="0,0,0,4" FontWeight="SemiBold"/>
+
+                        <TextBox Grid.Row="4" Text="{Binding CustomResponseHex, Mode=OneWay}" IsReadOnly="True"
+                                 FontFamily="Consolas" FontSize="13" TextWrapping="Wrap"
+                                 VerticalScrollBarVisibility="Auto" Background="#FFF9F9F9"/>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+
+            <!-- Grid Splitter -->
+            <GridSplitter Grid.Row="2" HorizontalAlignment="Stretch" Height="5" Background="Transparent" Cursor="SizeNS"/>
+
+            <!-- Communication Log -->
+            <GroupBox Grid.Row="3" Margin="0,4,0,0">
+                <GroupBox.Header>
+                    <DockPanel LastChildFill="True">
+                        <Button Content="Clear Log" Command="{Binding ClearLogCommand}" DockPanel.Dock="Right"
+                                Padding="8,2" FontSize="11" Margin="8,0,0,0"/>
+                        <TextBlock Text="Communication Log (TX = Sent, RX = Received)" VerticalAlignment="Center"/>
+                    </DockPanel>
+                </GroupBox.Header>
+                <ListBox x:Name="LogListBox" ItemsSource="{Binding FrameLog}" FontFamily="Consolas" FontSize="11.5"
+                         ScrollViewer.HorizontalScrollBarVisibility="Auto" BorderThickness="0">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Display}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Direction}" Value="TX →">
+                                                <Setter Property="Foreground" Value="#FF1565C0"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Direction}" Value="RX ←">
+                                                <Setter Property="Foreground" Value="#FFE65100"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </GroupBox>
+        </Grid>
+    </DockPanel>
+</Window>

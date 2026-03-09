@@ -1,0 +1,179 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\lohith\\Modbusplay\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{F3C4CDA7-849F-52D5-1ED9-63494D26BEB6}|Modbusplay\\Modbusplay.csproj|d:\\lohith\\modbusplay\\modbusplay\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{F3C4CDA7-849F-52D5-1ED9-63494D26BEB6}|Modbusplay\\Modbusplay.csproj|solutionrelative:modbusplay\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F3C4CDA7-849F-52D5-1ED9-63494D26BEB6}|Modbusplay\\Modbusplay.csproj|d:\\lohith\\modbusplay\\modbusplay\\services\\modbustransport.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F3C4CDA7-849F-52D5-1ED9-63494D26BEB6}|Modbusplay\\Modbusplay.csproj|solutionrelative:modbusplay\\services\\modbustransport.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F3C4CDA7-849F-52D5-1ED9-63494D26BEB6}|Modbusplay\\Modbusplay.csproj|d:\\lohith\\modbusplay\\modbusplay\\viewmodels\\mainviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F3C4CDA7-849F-52D5-1ED9-63494D26BEB6}|Modbusplay\\Modbusplay.csproj|solutionrelative:modbusplay\\viewmodels\\mainviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F3C4CDA7-849F-52D5-1ED9-63494D26BEB6}|Modbusplay\\Modbusplay.csproj|d:\\lohith\\modbusplay\\modbusplay\\services\\modbusprotocol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F3C4CDA7-849F-52D5-1ED9-63494D26BEB6}|Modbusplay\\Modbusplay.csproj|solutionrelative:modbusplay\\services\\modbusprotocol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F3C4CDA7-849F-52D5-1ED9-63494D26BEB6}|Modbusplay\\Modbusplay.csproj|d:\\lohith\\modbusplay\\modbusplay\\models\\modbustypes.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F3C4CDA7-849F-52D5-1ED9-63494D26BEB6}|Modbusplay\\Modbusplay.csproj|solutionrelative:modbusplay\\models\\modbustypes.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F3C4CDA7-849F-52D5-1ED9-63494D26BEB6}|Modbusplay\\Modbusplay.csproj|d:\\lohith\\modbusplay\\modbusplay\\helpers\\relaycommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F3C4CDA7-849F-52D5-1ED9-63494D26BEB6}|Modbusplay\\Modbusplay.csproj|solutionrelative:modbusplay\\helpers\\relaycommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F3C4CDA7-849F-52D5-1ED9-63494D26BEB6}|Modbusplay\\Modbusplay.csproj|d:\\lohith\\modbusplay\\modbusplay\\helpers\\observableobject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F3C4CDA7-849F-52D5-1ED9-63494D26BEB6}|Modbusplay\\Modbusplay.csproj|solutionrelative:modbusplay\\helpers\\observableobject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F3C4CDA7-849F-52D5-1ED9-63494D26BEB6}|Modbusplay\\Modbusplay.csproj|d:\\lohith\\modbusplay\\modbusplay\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F3C4CDA7-849F-52D5-1ED9-63494D26BEB6}|Modbusplay\\Modbusplay.csproj|solutionrelative:modbusplay\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 1,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedHeight": 290,
+          "SelectedChildIndex": 8,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{eefa5220-e298-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{40ea2e6b-2121-4bb8-a43e-c83c04b51041}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ModbusTypes.cs",
+              "DocumentMoniker": "D:\\lohith\\Modbusplay\\Modbusplay\\Models\\ModbusTypes.cs",
+              "RelativeDocumentMoniker": "Modbusplay\\Models\\ModbusTypes.cs",
+              "ToolTip": "D:\\lohith\\Modbusplay\\Modbusplay\\Models\\ModbusTypes.cs",
+              "RelativeToolTip": "Modbusplay\\Models\\ModbusTypes.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAGEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T06:32:02.425Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "MainWindow.xaml",
+              "DocumentMoniker": "D:\\lohith\\Modbusplay\\Modbusplay\\MainWindow.xaml",
+              "RelativeDocumentMoniker": "Modbusplay\\MainWindow.xaml",
+              "ToolTip": "D:\\lohith\\Modbusplay\\Modbusplay\\MainWindow.xaml",
+              "RelativeToolTip": "Modbusplay\\MainWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-03-09T06:09:42.014Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ModbusTransport.cs",
+              "DocumentMoniker": "D:\\lohith\\Modbusplay\\Modbusplay\\Services\\ModbusTransport.cs",
+              "RelativeDocumentMoniker": "Modbusplay\\Services\\ModbusTransport.cs",
+              "ToolTip": "D:\\lohith\\Modbusplay\\Modbusplay\\Services\\ModbusTransport.cs",
+              "RelativeToolTip": "Modbusplay\\Services\\ModbusTransport.cs",
+              "ViewState": "AgIAADABAAAAAAAAAAAmwGwAAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T06:33:10.237Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ModbusProtocol.cs",
+              "DocumentMoniker": "D:\\lohith\\Modbusplay\\Modbusplay\\Services\\ModbusProtocol.cs",
+              "RelativeDocumentMoniker": "Modbusplay\\Services\\ModbusProtocol.cs",
+              "ToolTip": "D:\\lohith\\Modbusplay\\Modbusplay\\Services\\ModbusProtocol.cs",
+              "RelativeToolTip": "Modbusplay\\Services\\ModbusProtocol.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0BAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T06:32:34.178Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "RelayCommand.cs",
+              "DocumentMoniker": "D:\\lohith\\Modbusplay\\Modbusplay\\Helpers\\RelayCommand.cs",
+              "RelativeDocumentMoniker": "Modbusplay\\Helpers\\RelayCommand.cs",
+              "ToolTip": "D:\\lohith\\Modbusplay\\Modbusplay\\Helpers\\RelayCommand.cs",
+              "RelativeToolTip": "Modbusplay\\Helpers\\RelayCommand.cs",
+              "ViewState": "AgIAAC4AAAAAAAAAAIBJwDEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T06:31:48.705Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ObservableObject.cs",
+              "DocumentMoniker": "D:\\lohith\\Modbusplay\\Modbusplay\\Helpers\\ObservableObject.cs",
+              "RelativeDocumentMoniker": "Modbusplay\\Helpers\\ObservableObject.cs",
+              "ToolTip": "D:\\lohith\\Modbusplay\\Modbusplay\\Helpers\\ObservableObject.cs",
+              "RelativeToolTip": "Modbusplay\\Helpers\\ObservableObject.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T06:31:43.739Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "MainViewModel.cs",
+              "DocumentMoniker": "D:\\lohith\\Modbusplay\\Modbusplay\\ViewModels\\MainViewModel.cs",
+              "RelativeDocumentMoniker": "Modbusplay\\ViewModels\\MainViewModel.cs",
+              "ToolTip": "D:\\lohith\\Modbusplay\\Modbusplay\\ViewModels\\MainViewModel.cs",
+              "RelativeToolTip": "Modbusplay\\ViewModels\\MainViewModel.cs",
+              "ViewState": "AgIAAB0AAAAAAAAAAABBwPMCAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T06:34:26.595Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "MainWindow.xaml.cs",
+              "DocumentMoniker": "D:\\lohith\\Modbusplay\\Modbusplay\\MainWindow.xaml.cs",
+              "RelativeDocumentMoniker": "Modbusplay\\MainWindow.xaml.cs",
+              "ToolTip": "D:\\lohith\\Modbusplay\\Modbusplay\\MainWindow.xaml.cs",
+              "RelativeToolTip": "Modbusplay\\MainWindow.xaml.cs",
+              "ViewState": "AgIAAB0AAAAAAAAAAIBJwB8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T06:09:41.485Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
