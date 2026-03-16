@@ -1718,19 +1718,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\kccha\\.nuget\\packages\\": {}
+    "C:\\Users\\quark\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\lohith\\Modbusplay\\Modbusplay\\Modbusplay.csproj",
+      "projectUniqueName": "O:\\WindowsProjects\\Modbusplay\\Modbusplay\\Modbusplay.csproj",
       "projectName": "Modbusplay",
-      "projectPath": "D:\\lohith\\Modbusplay\\Modbusplay\\Modbusplay.csproj",
-      "packagesPath": "C:\\Users\\kccha\\.nuget\\packages\\",
-      "outputPath": "D:\\lohith\\Modbusplay\\Modbusplay\\obj\\",
+      "projectPath": "O:\\WindowsProjects\\Modbusplay\\Modbusplay\\Modbusplay.csproj",
+      "packagesPath": "C:\\Users\\quark\\.nuget\\packages\\",
+      "outputPath": "O:\\WindowsProjects\\Modbusplay\\Modbusplay\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
-        "C:\\Users\\kccha\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\quark\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -1786,7 +1791,7 @@
             "privateAssets": "none"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.CSharp": "(,4.7.32767]",
           "Microsoft.VisualBasic": "(,10.4.32767]",

@@ -1,3 +1,4 @@
+using System.IO;
 using System.IO.Ports;
 using System.Net;
 using System.Net.Sockets;
@@ -17,6 +18,27 @@ public class ModbusTransport : IDisposable
 
     public event Action<byte[]>? DataSent;
     public event Action<byte[]>? DataReceived;
+    public event Action<string>? ConnectionLost;
+
+    public bool IsAlive
+    {
+        get
+        {
+            try
+            {
+                if (_serialPort != null) return _serialPort.IsOpen;
+                if (_tcpClient != null) return _tcpClient.Connected;
+                return false;
+            }
+            catch { return false; }
+        }
+    }
+
+    private void MarkConnectionLost(string reason)
+    {
+        IsConnected = false;
+        ConnectionLost?.Invoke(reason);
+    }
 
     public void ConnectSerial(string portName, int baudRate, int dataBits, StopBits stopBits, Parity parity)
     {
@@ -63,12 +85,25 @@ public class ModbusTransport : IDisposable
         if (!IsConnected)
             throw new InvalidOperationException("Not connected");
 
-        if (_serialPort != null)
-            _serialPort.Write(frame, 0, frame.Length);
-        else if (_tcpStream != null)
-            _tcpStream.Write(frame, 0, frame.Length);
+        try
+        {
+            if (_serialPort != null)
+                _serialPort.Write(frame, 0, frame.Length);
+            else if (_tcpStream != null)
+                _tcpStream.Write(frame, 0, frame.Length);
 
-        DataSent?.Invoke(frame);
+            DataSent?.Invoke(frame);
+        }
+        catch (InvalidOperationException ex)
+        {
+            MarkConnectionLost($"Connection lost: {ex.Message}");
+            throw;
+        }
+        catch (IOException ex)
+        {
+            if (!IsAlive) MarkConnectionLost($"Connection lost: {ex.Message}");
+            throw;
+        }
     }
 
     public byte[] Receive(ModbusProtocolType protocol, int timeoutMs)
@@ -76,16 +111,27 @@ public class ModbusTransport : IDisposable
         if (!IsConnected)
             throw new InvalidOperationException("Not connected");
 
-        var result = protocol switch
+        try
         {
-            ModbusProtocolType.RTU => ReceiveRtu(timeoutMs),
-            ModbusProtocolType.ASCII => ReceiveAscii(timeoutMs),
-            ModbusProtocolType.TCP => ReceiveTcp(timeoutMs),
-            _ => throw new ArgumentOutOfRangeException(nameof(protocol))
-        };
+            var result = protocol switch
+            {
+                ModbusProtocolType.RTU => ReceiveRtu(timeoutMs),
+                ModbusProtocolType.ASCII => ReceiveAscii(timeoutMs),
+                ModbusProtocolType.TCP => ReceiveTcp(timeoutMs),
+                _ => throw new ArgumentOutOfRangeException(nameof(protocol))
+            };
 
-        DataReceived?.Invoke(result);
-        return result;
+            DataReceived?.Invoke(result);
+            return result;
+        }
+        catch (InvalidOperationException ex) when (
+            ex is ObjectDisposedException ||
+            ex.Message.Contains("closed", StringComparison.OrdinalIgnoreCase) ||
+            ex.Message.Contains("not open", StringComparison.OrdinalIgnoreCase))
+        {
+            MarkConnectionLost($"Connection lost: {ex.Message}");
+            throw;
+        }
     }
 
     private byte[] ReceiveRtu(int timeoutMs)
@@ -107,6 +153,10 @@ public class ModbusTransport : IDisposable
             catch (TimeoutException)
             {
                 throw new TimeoutException("No response received within timeout period");
+            }
+            catch (IOException ex)
+            {
+                throw new TimeoutException($"Serial communication error: {ex.Message}", ex);
             }
             return [.. buffer];
         }
@@ -136,6 +186,10 @@ public class ModbusTransport : IDisposable
             if (buffer.Count == 0)
                 throw new TimeoutException("No response received within timeout period");
         }
+        catch (IOException ex)
+        {
+            throw new TimeoutException($"Serial communication error: {ex.Message}", ex);
+        }
         return [.. buffer];
     }
 
@@ -146,30 +200,41 @@ public class ModbusTransport : IDisposable
 
         _tcpStream.ReadTimeout = timeoutMs;
 
-        var header = new byte[6];
-        int totalRead = 0;
-        while (totalRead < 6)
+        try
         {
-            int read = _tcpStream.Read(header, totalRead, 6 - totalRead);
-            if (read == 0) throw new InvalidOperationException("Connection closed by remote host");
-            totalRead += read;
+            var header = new byte[6];
+            int totalRead = 0;
+            while (totalRead < 6)
+            {
+                int read = _tcpStream.Read(header, totalRead, 6 - totalRead);
+                if (read == 0) throw new InvalidOperationException("Connection closed by remote host");
+                totalRead += read;
+            }
+
+            int length = (header[4] << 8) | header[5];
+
+            var pdu = new byte[length];
+            totalRead = 0;
+            while (totalRead < length)
+            {
+                int read = _tcpStream.Read(pdu, totalRead, length - totalRead);
+                if (read == 0) throw new InvalidOperationException("Connection closed by remote host");
+                totalRead += read;
+            }
+
+            var frame = new byte[6 + length];
+            Array.Copy(header, 0, frame, 0, 6);
+            Array.Copy(pdu, 0, frame, 6, length);
+            return frame;
         }
-
-        int length = (header[4] << 8) | header[5];
-
-        var pdu = new byte[length];
-        totalRead = 0;
-        while (totalRead < length)
+        catch (IOException ex) when (ex.InnerException is SocketException { SocketErrorCode: SocketError.TimedOut })
         {
-            int read = _tcpStream.Read(pdu, totalRead, length - totalRead);
-            if (read == 0) throw new InvalidOperationException("Connection closed by remote host");
-            totalRead += read;
+            throw new TimeoutException("No response received within timeout period", ex);
         }
-
-        var frame = new byte[6 + length];
-        Array.Copy(header, 0, frame, 0, 6);
-        Array.Copy(pdu, 0, frame, 6, length);
-        return frame;
+        catch (IOException ex)
+        {
+            throw new InvalidOperationException($"TCP communication error: {ex.Message}", ex);
+        }
     }
 
     public async Task StartTcpSlaveAsync(int port, Func<byte, byte[], byte[]?> requestHandler, Action<byte[]> onReceived, Action<byte[]> onSent, CancellationToken ct)

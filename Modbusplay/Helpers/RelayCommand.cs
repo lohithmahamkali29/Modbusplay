@@ -15,7 +15,7 @@ public class RelayCommand(Action<object?> execute, Func<object?, bool>? canExecu
     public void Execute(object? parameter) => execute(parameter);
 }
 
-public class AsyncRelayCommand(Func<object?, Task> execute, Func<object?, bool>? canExecute = null) : ICommand
+public class AsyncRelayCommand(Func<object?, Task> execute, Func<object?, bool>? canExecute = null, Action<Exception>? onError = null) : ICommand
 {
     private bool _isExecuting;
 
@@ -30,15 +30,17 @@ public class AsyncRelayCommand(Func<object?, Task> execute, Func<object?, bool>?
     public async void Execute(object? parameter)
     {
         if (_isExecuting) return;
+
         _isExecuting = true;
         CommandManager.InvalidateRequerySuggested();
+
         try
         {
             await execute(parameter);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Caught here so async void never crashes the app
+            onError?.Invoke(ex);
         }
         finally
         {

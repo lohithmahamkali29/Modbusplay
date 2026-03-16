@@ -15,6 +15,8 @@ public class MainViewModel : ObservableObject, IDisposable
     private readonly ModbusTransport _transport = new();
     private readonly Dispatcher _dispatcher;
     private CancellationTokenSource? _slaveCts;
+    private DispatcherTimer? _healthTimer;
+    private int _failedHealthChecks;
 
     public MainViewModel()
     {
@@ -22,16 +24,21 @@ public class MainViewModel : ObservableObject, IDisposable
 
         _transport.DataSent += data => AddLog("TX ?", data);
         _transport.DataReceived += data => AddLog("RX ?", data);
+        _transport.ConnectionLost += reason => _dispatcher.BeginInvoke(() =>
+        {
+            if (!IsConnected) return;
+            AutoDisconnect($"Connection lost: {reason}");
+        });
 
         ConnectCommand = new RelayCommand(_ => Connect(), _ => !IsConnected);
         DisconnectCommand = new RelayCommand(_ => Disconnect(), _ => IsConnected);
         RefreshPortsCommand = new RelayCommand(_ => RefreshPorts());
-        ExecuteMasterCommand = new AsyncRelayCommand(_ => ExecuteMaster(), _ => IsConnected);
-        StartSlaveCommand = new AsyncRelayCommand(_ => StartSlave(), _ => !IsSlaveRunning);
+        ExecuteMasterCommand = new AsyncRelayCommand(_ => ExecuteMaster(), _ => IsConnected, HandleCommandError);
+        StartSlaveCommand = new AsyncRelayCommand(_ => StartSlave(), _ => !IsSlaveRunning, HandleCommandError);
         StopSlaveCommand = new RelayCommand(_ => StopSlave(), _ => IsSlaveRunning);
         AddSlaveRegisterCommand = new RelayCommand(_ => AddSlaveRegister());
         RemoveSlaveRegisterCommand = new RelayCommand(_ => RemoveSlaveRegister());
-        SendCustomFrameCommand = new AsyncRelayCommand(_ => SendCustomFrame(), _ => IsConnected);
+        SendCustomFrameCommand = new AsyncRelayCommand(_ => SendCustomFrame(), _ => IsConnected, HandleCommandError);
         ClearLogCommand = new RelayCommand(_ => FrameLog.Clear());
 
         RefreshPorts();
@@ -64,8 +71,6 @@ public class MainViewModel : ObservableObject, IDisposable
             {
                 OnPropertyChanged(nameof(IsSerialMode));
                 OnPropertyChanged(nameof(IsTcpMode));
-                if (IsSerialMode)
-                    RefreshPorts();
             }
         }
     }
@@ -176,7 +181,7 @@ public class MainViewModel : ObservableObject, IDisposable
                 OnPropertyChanged(nameof(IsSingleWrite));
                 OnPropertyChanged(nameof(IsMultipleWrite));
                 OnPropertyChanged(nameof(ShowQuantity));
-                OnPropertyChanged(nameof(ShowByteOrder));
+                OnPropertyChanged(nameof(IsRegisterFunction));
             }
         }
     }
@@ -186,7 +191,7 @@ public class MainViewModel : ObservableObject, IDisposable
     public bool IsSingleWrite => SelectedFunctionCode?.IsSingleWrite ?? false;
     public bool IsMultipleWrite => SelectedFunctionCode?.IsMultipleWrite ?? false;
     public bool ShowQuantity => IsReadFunction || IsMultipleWrite;
-    public bool ShowByteOrder => SelectedFunctionCode != null && !SelectedFunctionCode.IsCoilFunction;
+    public bool IsRegisterFunction => !(SelectedFunctionCode?.IsCoilFunction ?? false);
 
     private ushort _startAddress;
     public ushort StartAddress
@@ -334,20 +339,11 @@ public class MainViewModel : ObservableObject, IDisposable
 
     private void RefreshPorts()
     {
-        try
-        {
-            AvailableComPorts.Clear();
-            foreach (var port in SerialPort.GetPortNames().OrderBy(p => p))
-                AvailableComPorts.Add(port);
-            if (AvailableComPorts.Count > 0 && !AvailableComPorts.Contains(SelectedComPort))
-                SelectedComPort = AvailableComPorts[0];
-            if (AvailableComPorts.Count == 0)
-                StatusMessage = "No COM ports found. Check device connections.";
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Error loading COM ports: {ex.Message}";
-        }
+        AvailableComPorts.Clear();
+        foreach (var port in SerialPort.GetPortNames())
+            AvailableComPorts.Add(port);
+        if (AvailableComPorts.Count > 0)
+            SelectedComPort = AvailableComPorts[0];
     }
 
     private ModbusProtocolType GetProtocolType() => SelectedProtocol switch
@@ -386,6 +382,10 @@ public class MainViewModel : ObservableObject, IDisposable
                 _transport.ConnectSerial(SelectedComPort, SelectedBaudRate, SelectedDataBits, GetStopBits(), GetParity());
 
             IsConnected = true;
+            _failedHealthChecks = 0;
+            _healthTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+            _healthTimer.Tick += CheckConnectionHealth;
+            _healthTimer.Start();
             StatusMessage = $"Connected via {SelectedProtocol}" +
                 (IsTcpMode ? $" to {IpAddress}:{TcpPort}" : $" on {SelectedComPort}");
         }
@@ -398,6 +398,7 @@ public class MainViewModel : ObservableObject, IDisposable
 
     private void Disconnect()
     {
+        _healthTimer?.Stop();
         _transport.Disconnect();
         IsConnected = false;
         StatusMessage = "Disconnected";
@@ -449,8 +450,15 @@ public class MainViewModel : ObservableObject, IDisposable
             }
 
             var frame = ModbusProtocol.BuildFrame(protocol, SlaveId, (byte)functionCode, pduData);
-            var response = await Task.Run(() => _transport.SendAndReceive(frame, protocol, TimeoutMs));
-            var (_, respFc, respData) = ModbusProtocol.ParseResponse(protocol, response);
+
+            var (response, commError) = await RunSafe(() => _transport.SendAndReceive(frame, protocol, TimeoutMs));
+            if (commError != null)
+            {
+                HandleCommunicationError(commError);
+                return;
+            }
+
+            var (_, respFc, respData) = ModbusProtocol.ParseResponse(protocol, response!);
 
             if ((respFc & 0x80) != 0)
             {
@@ -495,7 +503,7 @@ public class MainViewModel : ObservableObject, IDisposable
         }
         catch (Exception ex)
         {
-            ResponseInfo = $"? Error: {ex.Message}";
+            ResponseInfo = $"\u2717 Error: {ex.Message}";
             StatusMessage = $"Error: {ex.Message}";
         }
     }
@@ -722,13 +730,23 @@ public class MainViewModel : ObservableObject, IDisposable
 
             if (WaitForResponse)
             {
-                var response = await Task.Run(() => _transport.SendAndReceive(frame, GetProtocolType(), TimeoutMs));
-                CustomResponseHex = BitConverter.ToString(response).Replace("-", " ");
+                var (response, commError) = await RunSafe(() => _transport.SendAndReceive(frame, GetProtocolType(), TimeoutMs));
+                if (commError != null)
+                {
+                    HandleCommunicationError(commError, isCustomFrame: true);
+                    return;
+                }
+                CustomResponseHex = BitConverter.ToString(response!).Replace("-", " ");
                 StatusMessage = "Custom frame sent, response received";
             }
             else
             {
-                await Task.Run(() => _transport.Send(frame));
+                var sendError = await RunSafe(() => _transport.Send(frame));
+                if (sendError != null)
+                {
+                    HandleCommunicationError(sendError, isCustomFrame: true);
+                    return;
+                }
                 StatusMessage = "Custom frame sent";
             }
         }
@@ -745,8 +763,168 @@ public class MainViewModel : ObservableObject, IDisposable
         _dispatcher.BeginInvoke(() => FrameLog.Add(entry));
     }
 
+    private static async Task<(T? result, Exception? error)> RunSafe<T>(Func<T> action)
+    {
+        T? result = default;
+        Exception? error = null;
+        await Task.Run(() =>
+        {
+            try { result = action(); }
+            catch (Exception ex) { error = ex; }
+        });
+        return (result, error);
+    }
+
+    private static async Task<Exception?> RunSafe(Action action)
+    {
+        Exception? error = null;
+        await Task.Run(() =>
+        {
+            try { action(); }
+            catch (Exception ex) { error = ex; }
+        });
+        return error;
+    }
+
+    private void HandleCommunicationError(Exception ex, bool isCustomFrame = false)
+    {
+        // Connection lost — auto-disconnect
+        if (!_transport.IsAlive && IsConnected)
+        {
+            AutoDisconnect($"Connection lost: {ex.Message}");
+            return;
+        }
+
+        if (ex is InvalidOperationException &&
+            (ex.Message.Contains("closed", StringComparison.OrdinalIgnoreCase) ||
+             ex.Message.Contains("lost", StringComparison.OrdinalIgnoreCase) ||
+             ex.Message.Contains("disposed", StringComparison.OrdinalIgnoreCase) ||
+             ex is ObjectDisposedException))
+        {
+            AutoDisconnect($"Connection lost during operation:\n{ex.Message}");
+            return;
+        }
+
+        string title, popupMessage, hint;
+
+        if (ex is TimeoutException)
+        {
+            title = "Communication Timeout";
+            popupMessage = "No response received from the device.";
+            hint = "\u2022 Check that the device is powered on and connected\n" +
+                   "\u2022 Verify the IP address/COM port is correct\n" +
+                   "\u2022 Confirm the Slave ID matches the device\n" +
+                   "\u2022 Try increasing the timeout value\n" +
+                   "\u2022 Check your network/serial cable connection";
+
+            StatusMessage = "Timeout - no response received";
+            if (isCustomFrame)
+                CustomResponseHex = "No response received - timeout";
+            else
+                ResponseInfo = "\u2717 No response - device did not reply within the timeout period";
+        }
+        else
+        {
+            title = "Communication Error";
+            popupMessage = $"An error occurred:\n{ex.Message}";
+            hint = "\u2022 Check your connection settings\n" +
+                   "\u2022 Verify the device is responding\n" +
+                   "\u2022 Try disconnecting and reconnecting";
+
+            StatusMessage = $"Error: {ex.Message}";
+            if (isCustomFrame)
+                CustomResponseHex = $"Error: {ex.Message}";
+            else
+                ResponseInfo = $"\u2717 Error: {ex.Message}";
+        }
+
+        MessageBox.Show(
+            $"{popupMessage}\n\nSuggestions:\n{hint}",
+            title,
+            MessageBoxButton.OK,
+            MessageBoxImage.Warning);
+    }
+
+    private void CheckConnectionHealth(object? sender, EventArgs e)
+    {
+        if (!IsConnected) { _healthTimer?.Stop(); return; }
+
+        if (!_transport.IsAlive)
+        {
+            _failedHealthChecks++;
+            if (_failedHealthChecks >= 6) // 30 seconds (6 × 5s)
+            {
+                AutoDisconnect(
+                    "The device has not responded for over 30 seconds.\n" +
+                    "The connection appears to have been lost.");
+            }
+        }
+        else
+        {
+            _failedHealthChecks = 0;
+        }
+    }
+
+    private void AutoDisconnect(string reason)
+    {
+        _healthTimer?.Stop();
+        _transport.Disconnect();
+        IsConnected = false;
+        StatusMessage = "Disconnected - connection lost";
+        ResponseInfo = "";
+        MessageBox.Show(
+            $"{reason}\n\n" +
+            "The application has been disconnected automatically.\n\n" +
+            "To resume:\n" +
+            "\u2022 Check that the device is powered on and connected\n" +
+            "\u2022 Verify your cable/network connection\n" +
+            "\u2022 Click Connect to reconnect",
+            "Connection Lost",
+            MessageBoxButton.OK,
+            MessageBoxImage.Warning);
+    }
+
+    private void HandleCommandError(Exception ex)
+    {
+        // If the transport is dead, auto-disconnect
+        if (!_transport.IsAlive && IsConnected)
+        {
+            AutoDisconnect($"Connection lost: {ex.Message}");
+            return;
+        }
+
+        var (title, message, hint) = ex switch
+        {
+            TimeoutException => (
+                "Communication Timeout",
+                "No response received from the device within the timeout period.",
+                "\u2022 Check that the device is powered on and connected\n" +
+                "\u2022 Verify the IP address/COM port and Slave ID\n" +
+                "\u2022 Try increasing the timeout value"),
+            InvalidOperationException when ex.Message.Contains("closed", StringComparison.OrdinalIgnoreCase) => (
+                "Connection Lost",
+                "The connection to the device was lost.",
+                "\u2022 Check your network/serial cable\n" +
+                "\u2022 Click Disconnect then Connect to reconnect"),
+            _ => (
+                "Communication Error",
+                ex.Message,
+                "\u2022 Check your connection settings\n" +
+                "\u2022 Verify the device is responding\n" +
+                "\u2022 Try disconnecting and reconnecting")
+        };
+
+        StatusMessage = $"Error: {message}";
+        MessageBox.Show(
+            $"{message}\n\nSuggestions:\n{hint}",
+            title,
+            MessageBoxButton.OK,
+            MessageBoxImage.Warning);
+    }
+
     public void Dispose()
     {
+        _healthTimer?.Stop();
         _slaveCts?.Cancel();
         _transport.Dispose();
     }

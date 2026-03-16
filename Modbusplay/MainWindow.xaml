@@ -45,68 +45,26 @@
                         </StackPanel>
 
                         <!-- Serial settings -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
-                            <StackPanel.Style>
-                                <Style TargetType="StackPanel">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SelectedProtocol}" Value="RTU">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding SelectedProtocol}" Value="ASCII">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </StackPanel.Style>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,12,4"
+                                    Visibility="{Binding IsSerialMode, Converter={StaticResource BoolToVis}}">
                             <TextBlock Text="COM Port:" VerticalAlignment="Center" Margin="0,0,4,0"/>
                             <ComboBox ItemsSource="{Binding AvailableComPorts}" SelectedItem="{Binding SelectedComPort}" Width="90"/>
                             <Button Content="⟳" Command="{Binding RefreshPortsCommand}" Width="28" Margin="2,0,0,0" ToolTip="Refresh Ports"/>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
-                            <StackPanel.Style>
-                                <Style TargetType="StackPanel">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SelectedProtocol}" Value="RTU">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding SelectedProtocol}" Value="ASCII">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </StackPanel.Style>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,12,4"
+                                    Visibility="{Binding IsSerialMode, Converter={StaticResource BoolToVis}}">
                             <TextBlock Text="Baud:" VerticalAlignment="Center" Margin="0,0,4,0"/>
                             <ComboBox ItemsSource="{Binding BaudRates}" SelectedItem="{Binding SelectedBaudRate}" Width="80"/>
                         </StackPanel>
 
                         <!-- TCP settings -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
-                            <StackPanel.Style>
-                                <Style TargetType="StackPanel">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SelectedProtocol}" Value="TCP">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </StackPanel.Style>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,12,4"
+                                    Visibility="{Binding IsTcpMode, Converter={StaticResource BoolToVis}}">
                             <TextBlock Text="IP Address:" VerticalAlignment="Center" Margin="0,0,4,0"/>
                             <TextBox Text="{Binding IpAddress, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
-                            <StackPanel.Style>
-                                <Style TargetType="StackPanel">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SelectedProtocol}" Value="TCP">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </StackPanel.Style>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,12,4"
+                                    Visibility="{Binding IsTcpMode, Converter={StaticResource BoolToVis}}">
                             <TextBlock Text="Port:" VerticalAlignment="Center" Margin="0,0,4,0"/>
                             <TextBox Text="{Binding TcpPort}" Width="60"/>
                         </StackPanel>
@@ -129,20 +87,7 @@
                     </WrapPanel>
 
                     <!-- Row 2: Additional serial settings -->
-                    <WrapPanel Grid.Row="1">
-                        <WrapPanel.Style>
-                            <Style TargetType="WrapPanel">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SelectedProtocol}" Value="RTU">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding SelectedProtocol}" Value="ASCII">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </WrapPanel.Style>
+                    <WrapPanel Grid.Row="1" Visibility="{Binding IsSerialMode, Converter={StaticResource BoolToVis}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,12,0">
                             <TextBlock Text="Data Bits:" VerticalAlignment="Center" Margin="0,0,4,0"/>
                             <ComboBox ItemsSource="{Binding DataBitsOptions}" SelectedItem="{Binding SelectedDataBits}" Width="50"/>
@@ -189,10 +134,10 @@
                                 <TextBlock Text="Quantity:" VerticalAlignment="Center" Margin="0,0,4,0"/>
                                 <TextBox Text="{Binding Quantity}" Width="60"/>
                             </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,12,4"
-                                        IsEnabled="{Binding ShowByteOrder}">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
                                 <TextBlock Text="Byte Order:" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                                <ComboBox ItemsSource="{Binding ByteOrderOptions}" SelectedItem="{Binding SelectedByteOrder}" Width="190"/>
+                                <ComboBox ItemsSource="{Binding ByteOrderOptions}" SelectedItem="{Binding SelectedByteOrder}" Width="190"
+                                          IsEnabled="{Binding IsRegisterFunction}"/>
                             </StackPanel>
                             <Button Content="  Execute  " Command="{Binding ExecuteMasterCommand}" Padding="20,4" Margin="0,0,0,4"
                                     FontWeight="Bold" Background="#FF2196F3" Foreground="White"/>
